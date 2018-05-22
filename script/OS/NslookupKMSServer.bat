@@ -1,3 +1,3 @@
-nslookup -type=srv _vlmcs._tcp.%USERDOMAIN%
+nslookup -type=srv _vlmcs._tcp.%USERDNSDOMAIN%
 @echo.
 @pause
