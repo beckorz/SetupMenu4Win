@@ -1,4 +1,4 @@
-Cufon.replace('h2.orange', { fontFamily: 'Gotham_Medium' });
+﻿Cufon.replace('h2.orange', { fontFamily: 'Gotham_Medium' });
 Cufon.replace('h2.red', { fontFamily: 'Gotham_Rounded_Medium' });
 
 jQuery(document).ready(function($){
