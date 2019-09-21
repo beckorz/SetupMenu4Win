@@ -10,33 +10,26 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 -->
 <job>
-<script language="vbscript">
-'********************************************************************************
-' OS種類確認
-'********************************************************************************
-Set objWMI = GetObject("winmgmts:" & "{impersonationLevel=impersonate}!\\.\root\cimv2")
-Set osInfo = objWMI.ExecQuery("SELECT * FROM Win32_OperatingSystem")
-Set w = CreateObject("Wscript.Shell")
+<script language="javascript">
+// Detect UAC
+var oLocator = new ActiveXObject("WbemScripting.SWbemLocator");
+var oService = oLocator.ConnectServer(".", "root\\default");
+var oRegProv = oService.Get("StdRegProv");
+var method = oRegProv.Methods_.Item("GetDWORDValue");
+var inParam = method.InParameters.SpawnInstance_();
+inParam.hDefKey = 0x80000002;       // HKLM
+inParam.sSubKeyName = "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\policies\\system";
+inParam.sValueName = "EnableLUA";
+var outParam = oRegProv.ExecMethod_(method.Name, inParam);
+var hasUac = (outParam.uValue !== null);
 
-hasUac = false
-For Each os in osInfo
-    If left(os.Version, 3) >= 6.0 Then
-        hasUac = true
-    End If
-Next
-
-'********************************************************************************
-' RunAsの管理者権限で実行(UACの昇格)
-'********************************************************************************
-Set objShell=CreateObject("Shell.Application")
-If hasUac Then
-    ' 引数付きで管理者権限で再実行
-    objShell.ShellExecute w.ExpandEnvironmentStrings("%windir%\system32\mshta.exe"), """" & w.CurrentDirectory & "\" & replace(WScript.ScriptName,"wsf", "hta") & """ """ & w.CurrentDirectory & """","","runas",1
-Else
-    objShell.ShellExecute w.ExpandEnvironmentStrings("%windir%\system32\mshta.exe"), """" & w.CurrentDirectory & "\" & replace(WScript.ScriptName,"wsf", "hta") & """ """ & w.CurrentDirectory & """"
-End If
-
-' Set w = CreateObject("Wscript.Shell")
-' w.Run w.ExpandEnvironmentStrings("%windir%\system32\mshta.exe") & " """ & w.CurrentDirectory & "\" & replace(WScript.ScriptName,"vbs","hta") & """", 0, false 
+// Shell execute by RunAs
+var w = new ActiveXObject("Wscript.Shell");
+var app = new ActiveXObject('Shell.Application');
+if (hasUac) {
+    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + w.CurrentDirectory + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + w.CurrentDirectory + "\"","","runas",1)
+} else {
+    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + w.CurrentDirectory + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + w.CurrentDirectory + "\"")
+}
 </script>
 </job> 
