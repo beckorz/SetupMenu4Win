@@ -1,17 +1,49 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript">
+<![CDATA[
+var shell = new ActiveXObject("Shell.Application");
+var regExpObj = new ActiveXObject("VBScript.RegExp");
+var fs = new ActiveXObject("Scripting.FileSystemObject");
 
-	' Consolas の フォントをFontLinkを使用して日本語対応する。
-	' @see 
-	root = HKLM
-	keyName = "SOFTWARE\Microsoft\Windows NT\CurrentVersion\FontLink\SystemLink"
-	entryName = "Consolas"
-'	v = "meiryo.ttc,メイリオ"
-	v = "meiryoKe_627r1.ttc,MeiryoKe_Console"
-'	v = "MSGOTHIC.TTC,MS Gothic"
-	call regSetMultiStringValue(root, keyName, entryName, v)	' 
+function echo(str) { WScript.echo(str); }
+function searchFiles(path, regExpPattern, func) {
+    regExpObj.Pattern = regExpPattern;
+    var files = fs.GetFolder(path).Files;
+    var em = new Enumerator(files);
+    for(em.moveFirst(); !em.atEnd(); em.moveNext()){
+        // Return callback.
+        if (regExpObj.Test(em.item().Name)) {
+            func(em.item());
+        }
+    }
+}
 
+var reg = new Registry('.');
+
+function setFontLink(fileName) {
+    var ret = reg.SetMultiStringValue(reg.HKLM, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\FontLink\\SystemLink", "Consolas", (fileName + ',MeiryoKe_Console').split('#'));
+    if (ret === 0) {
+        echo('[Success] Registry set success.');
+    } else {
+        //
+        echo("[Error] SystemLink failed. registry set error. Need run as administrator.");
+    }
+}
+
+var fontsFolder = shell.Namespace(20);   // 20: fonts directory
+
+var existsFonts = false;
+var fontFiles = [];
+searchFiles(fontsFolder.Self.Path, "[mM]eiryo[kK]e_.*\.ttc", function(x){ existsFonts = true; fontFiles.push(x); });
+if (existsFonts) {
+    for (var i = 0; i < fontFiles.length; i++) {
+        setFontLink(fs.GetFileName(fontFiles[i]));
+    }
+} else {
+    echo('Not found MeiryoKe font.\r\nPlease install MeiryoKe Font.');
+}
+]]>
 </script>
 </job>
