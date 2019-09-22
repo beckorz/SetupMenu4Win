@@ -1,12 +1,15 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
-
-	' コンソールの既定の設定
-	root = HKCU
-	keyName = "Console"
-	call regSetDWORDValue (root, keyName, "WindowAlpha", 220)				' 0x000000dc (1048576)
-
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript">
+<![CDATA[
+var reg = new Registry('.');
+var ret = reg.SetDWORDValue(reg.HKCU, "Console", "WindowAlpha", 220); // 0x000000dc
+if (ret === 0) {
+    WScript.echo('[Success] Registry set successfully.');
+} else {
+    WScript.echo("[Error] SystemLink failed. registry set error. Need run as administrator.");
+}
+]]>
 </script>
 </job>
