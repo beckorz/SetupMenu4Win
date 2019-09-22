@@ -1,0 +1,144 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript">
+<![CDATA[
+
+/**
+ * Install font script.
+ *
+ * @see: rexpan/FiraCode-choco - https://github.com/rexpan/FiraCode-choco
+ */
+
+var shell = new ActiveXObject("Shell.Application");
+var regExpObj = new ActiveXObject("VBScript.RegExp");
+var fs = new ActiveXObject("Scripting.FileSystemObject");
+var BASE_KEY_NAME = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+
+function echo(str) { WScript.echo(str); }
+function searchFiles(path, regExpPattern, func) {
+    regExpObj.Pattern = regExpPattern;
+    var files = fs.GetFolder(path).Files;
+    var em = new Enumerator(files);
+    for(em.moveFirst(); !em.atEnd(); em.moveNext()){
+        // Return callback.
+        if (regExpObj.Test(em.item().Name)) {
+            func(em.item());
+        }
+    }
+}
+
+/**
+ * Add font.
+ * @param {filePath} font file path.
+ * @return true: success
+ */
+function addSingleFont(filePath) {
+    var fontsFolder = shell.Namespace(20);   // 20: fonts directory
+    var fileDir = fs.GetParentFolderName(WScript.ScriptFullName);
+    var fileName = fs.GetFileName(filePath);
+    var fileExt = fs.GetExtensionName(fileName);
+    var fileBaseName = fileName.replace("." + fileExt, "");
+
+    var myFolder = shell.Namespace(fileDir);
+    var fileObj = myFolder.ParseName(fileName);
+    var fontName = myFolder.GetDetailsOf(fileObj, 21); // Get Font name by file properties
+
+    if (fontName === "") { fontName = fileBaseName; }
+
+    try {
+        // NOTE: Need administration.
+        fs.CopyFile(filePath, fontsFolder.Self.Path + '\\');
+
+        var isSuccess = false;
+        searchFiles(fontsFolder.Self.Path, fileName, function(){ isSuccess = true; });
+        if (isSuccess) {
+            // TODO: gdi32.dll AddFontResource(fontFinalPathPath)
+            
+            var fontFileType = "";
+            switch(fileExt.toLowerCase()) {
+            case "ttc":
+            case "ttf":
+                fontFileType = " (TrueType)";
+                break;
+            case "otf":
+                fontFileType = " (OpenType)";
+                break;
+            }
+            // Write regitry font information.
+            var reg = new Registry('.');
+            var ret = reg.SetStringValue(reg.HKLM, BASE_KEY_NAME, fontName + fontFileType, fileName);
+            if (ret === 0) {
+                echo("Font installed successfully. (Font file: " + fileName + ")");
+                return true;
+            } else {
+                echo("[Error] Font installation failed. registry write error. Need run as administrator. (Font file: " + fileName + ")");
+            }
+        } else {
+            echo("[Error] Font installation failed. (Font file: " + fileName + ")");
+        }
+    } catch(e) {
+        echo("[Error] Font installation failed. %windir%\\Fonts copy error. Need run as administrator. (Font file: " + fileName + ") (" + e.number + ": " + e.message + ")");
+        // throw(e);
+    }
+}
+
+/**
+ * Remove font.
+ * @param {fileName} Font file name.
+ */
+function removeSingleFont(filePath) {
+    // TODO: gdi32.dll RemoveFontResource(fontFinalPathPath)
+    var fileName = fs.GetFileName(filePath);
+    var reg = new Registry('.');
+    var regValues = reg.EnumValues(reg.HKLM, BASE_KEY_NAME);
+    for (var i = 0; i < regValues.Names.length; i++) {
+        // echo(regValues.Names[i] + ': [' + regValues.Types[i] + ']');
+        var val = "";
+        switch(regValues.Types[i]) {
+        case reg.REG_SZ: val = reg.GetStringValue(reg.HKLM, BASE_KEY_NAME, regValues.Names[i]); break;
+        case reg.REG_EXPAND_SZ: val = reg.GetExpandedStringValue(reg.HKLM, BASE_KEY_NAME, regValues.Names[i]); break;
+        case reg.REG_DWORD: val = reg.GetDWORDValue(reg.HKLM, BASE_KEY_NAME, regValues.Names[i]); break;
+        }
+        // echo(val);
+        if (new RegExp(fileName, "gi").test(val)) {
+            // echo('match: ' + regValues.Names[i] + ': ' + val);
+
+            // Delete registry font information.
+            var ret = reg.DeleteValue(reg.HKLM, BASE_KEY_NAME, regValues.Names[i]);
+            if (ret === 0) {
+
+                // Delete font file.
+                // Font `'$($file)`' removed successfully
+                var fontsFolder = shell.Namespace(20);   // 20: fonts directory
+                var fontFinalPath = fs.BuildPath(fontsFolder.Self.Path, fileName);
+                try {
+                    fs.DeleteFile(fontFinalPath);
+                    break;
+                } catch(e) {
+                    echo("[Error] Font uninstallation failed. %windir%\\Fonts delete error. (Font file: " + fontFinalPath + ") (" + e.number + ": " + e.message + ")");
+                    return false;
+                }
+            } else {
+                echo("[Error] Font uninstallation failed. registry delete error. Need run as administrator. (Font file: " + fileName + ")");
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+if (WScript.arguments.length !== 1) {
+    echo('Invalid argument. Usage: cscript //nologo FontInstall.wsf font_file_name.ttf');
+} else {
+    var file = WScript.arguments(0);
+    // Remove font.
+    if (removeSingleFont(file)) {
+        // Add font.
+        addSingleFont(file);
+    }
+}
+
+]]>
+</script>
+</job>
