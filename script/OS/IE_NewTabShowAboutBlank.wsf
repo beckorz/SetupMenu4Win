@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="../../_lib/registry.js"/>
+<script language="javascript">
+<![CDATA[
+
+var reg = new Registry('.');
+var ret = reg.SetDWORDValue(reg.HKCU, "Software\\Microsoft\\Internet Explorer\\TabbedBrowsing", "NewTabPageShow", 0);
+
+if (ret === 0) {
+    WScript.echo('[Success] Registry set successfully.');
+} else {
+    WScript.echo("[Error] failed. registry set error.");
+}
+
+]]>
+</script>
+</job>
