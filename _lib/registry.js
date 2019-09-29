@@ -20,6 +20,7 @@ Registry.prototype = {
         this.HKUS = 0x80000003;    // HKEY_USERS
         this.HKCC = 0x80000005;    // HKEY_CURRENT_CONFIG
 
+        // Types
         this.REG_SZ = 1;                            // 
         this.REG_EXPAND_SZ = 2;                     // 
         this.REG_BINARY = 3;                        // 
@@ -48,10 +49,13 @@ Registry.prototype = {
             // WScript.echo('value: ' + typeof value + ':' + value);
             if (valueName !== undefined) {
                 // WScript.echo('valueName: ' + typeof valueName);
+                // WScript.echo('value: ' + typeof value);
                 inParam.sValueName = valueName;
-                if ((typeof value) === "number") {
+                if (typeof value === "number" || (typeof value === "object") || (typeof value === "unknown")) {
+                    // object, unknown = SetRegBinaryValue
                     inParam.uValue = value;
                 } else {
+                    // String
                     inParam.sValue = value;
                 }
             } else {
@@ -99,6 +103,10 @@ Registry.prototype = {
         var outParam = this.doMethod("SetStringValue", hkey, key, value, name);
         return outParam.ReturnValue;
     },
+    ExistsStringValue: function(hkey, key, name) {
+        var outParam = this.GetStringValue(hkey, key, name);
+        return (outParam.sValue !== null);
+    },
 
     // ExpandString(REG_EXPAND_SZ)
     GetExpandedStringValue: function(hkey, key, name) {
@@ -108,6 +116,10 @@ Registry.prototype = {
     SetExpandedStringValue: function(hkey, key, name, value) {
         var outParam = this.doMethod("SetExpandedStringValue", hkey, key, value, name);
         return outParam.ReturnValue;
+    },
+    ExistsExpandedStringValue: function(hkey, key, name) {
+        var outParam = this.GetExpandedStringValue(hkey, key, name);
+        return (outParam.sValue !== null);
     },
 
     // DWORD(REG_DWORD)
@@ -119,6 +131,10 @@ Registry.prototype = {
         var outParam = this.doMethod("SetDWORDValue", hkey, key, value, name);
         return outParam.ReturnValue;
     },
+    ExistsDWORDValue: function(hkey, key, name) {
+        var outParam = this.GetDWORDValue(hkey, key, name);
+        return (outParam.uValue !== null);
+    },
 
     // Multi String(REG_MULTI_SZ)
     GetMultiStringValue: function(hkey, key, name) {
@@ -128,6 +144,10 @@ Registry.prototype = {
     SetMultiStringValue: function(hkey, key, name, value) {
         var outParam = this.doMethod("SetMultiStringValue", hkey, key, value, name);
         return outParam.ReturnValue;
+    },
+    ExistsMultiStringValue: function(hkey, key, name) {
+        var outParam = this.GetMultiStringValue(hkey, key, name);
+        return (outParam.sValue !== null);
     },
 
     // Binary(REG_BINARY) TODO:
@@ -139,17 +159,31 @@ Registry.prototype = {
         var outParam = this.doMethod("SetBinaryValue", hkey, key, value, name);
         return outParam.ReturnValue;
     },
+    ExistsBinaryValue: function(hkey, key, name) {
+        var outParam = this.GetBinaryValue(hkey, key, name);
+        return (outParam.uValue !== null);
+    },
 
     // Create key
     CreateKey: function(hkey, key) {
         var outParam = this.doMethod("CreateKey", hkey, key);   // 0:ok, not 0: ng
         return outParam.ReturnValue;   // 0:ok, not 0: ng
     },
-
     // Delete key
     DeleteKey: function(hkey, key) {
         var outParam = this.doMethod("DeleteKey", hkey, key);   // 0:ok, not 0: ng
         return outParam.ReturnValue;   // 0:ok, not 0: ng
+    },
+    ExistsKey: function(hkey, key) {
+        var enumKeyArray = key.split('\\');
+        var findKeyName = enumKeyArray.pop();
+        var regKeys = this.EnumKey(hkey, enumKeyArray.join("\\"));
+        for (var i = 0; i < regKeys.length; i++) {
+            if (regKeys[i] === findKeyName) {
+                return true;
+            }
+        }
+        return false;
     },
 
     // Delete value
@@ -157,4 +191,5 @@ Registry.prototype = {
         var outParam = this.doMethod("DeleteValue", hkey, key, name);   // 0:ok, not 0: ng
         return outParam.ReturnValue;   // 0:ok, not 0: ng
     }
+
 };
