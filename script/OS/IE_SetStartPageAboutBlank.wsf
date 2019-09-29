@@ -1,13 +1,22 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript">
+<![CDATA[
 
-	'■IE スタートページ
-	root = HKCU
-	keyName = "Software\Microsoft\Internet Explorer\Main"
-	call regSetStringValue(root, keyName, "Start Page", "about:blank")		' メインのスタートページ
-	call regDeleteValue(root, keyName, "Secondary Start Pages")				' 2番目以降のタブを開く設定は、消す
+var reg = new Registry('.');
+var key = 'Software\\Microsoft\\Internet Explorer\\Main';
+var ret = 0;
 
+ret += reg.SetStringValue(reg.HKCU, key, "Start Page", "about:blank");
+reg.DeleteValue(reg.HKCU, key, "Secondary Start Pages");
+
+if (ret === 0) {
+    WScript.echo('[Success] Registry set successfully.');
+} else {
+    WScript.echo("[Error] failed. registry set error.");
+}
+
+]]>
 </script>
 </job>
