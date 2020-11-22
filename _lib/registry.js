@@ -48,15 +48,26 @@ Registry.prototype = {
         if (value !== undefined) {
             // WScript.echo('value: ' + typeof value + ':' + value);
             if (valueName !== undefined) {
-                // WScript.echo('valueName: ' + typeof valueName);
-                // WScript.echo('value: ' + typeof value);
+                // WScript.echo('methodName: ' + methodName);
+                // WScript.echo('valueName: ' + typeof valueName + ' ' + valueName);
+                // WScript.echo('value: ' + typeof value + ' ' + value);
                 inParam.sValueName = valueName;
-                if (typeof value === "number" || (typeof value === "object") || (typeof value === "unknown")) {
-                    // object, unknown = SetRegBinaryValue
-                    inParam.uValue = value;
-                } else {
+                switch (typeof value) {
+                case 'number':
+                case 'object':
+                case 'unknown':
+                    if (methodName === 'SetMultiStringValue') {
+                        // MultiStringValue
+                        inParam.sValue = value;
+                    } else {
+                        // object, unknown = SetRegBinaryValue
+                        inParam.uValue = value;
+                    }
+                    break;
+                default:
                     // String
                     inParam.sValue = value;
+                    break;
                 }
             } else {
                 inParam.sValueName = value;
@@ -132,6 +143,20 @@ Registry.prototype = {
         return outParam.ReturnValue;
     },
     ExistsDWORDValue: function(hkey, key, name) {
+        var outParam = this.GetDWORDValue(hkey, key, name);
+        return (outParam.uValue !== null);
+    },
+
+    // QWORD(REG_QWORD)
+    GetQWORDValue: function(hkey, key, name) {
+        var outParam = this.doMethod("GetQWORDValue", hkey, key, name);
+        return outParam.uValue;
+    },
+    SetQWORDValue: function(hkey, key, name, value) {
+        var outParam = this.doMethod("SetQWORDValue", hkey, key, value, name);
+        return outParam.ReturnValue;
+    },
+    ExistsQWORDValue: function(hkey, key, name) {
         var outParam = this.GetDWORDValue(hkey, key, name);
         return (outParam.uValue !== null);
     },
