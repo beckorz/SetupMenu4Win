@@ -24,12 +24,14 @@ var outParam = oRegProv.ExecMethod_(method.Name, inParam);
 var hasUac = (outParam.uValue !== null);
 
 // Shell execute by RunAs
+var fs = new ActiveXObject("Scripting.FileSystemObject");
 var w = new ActiveXObject("Wscript.Shell");
 var app = new ActiveXObject('Shell.Application');
+var cur = fs.GetParentFolderName(WScript.ScriptFullName);
 if (hasUac) {
-    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + w.CurrentDirectory + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + w.CurrentDirectory + "\"","","runas",1)
+    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + cur + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + cur + "\"","","runas",1)
 } else {
-    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + w.CurrentDirectory + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + w.CurrentDirectory + "\"")
+    app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + cur + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + cur + "\"")
 }
 </script>
 </job> 
