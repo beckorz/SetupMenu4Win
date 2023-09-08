@@ -1,8 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <job>
 <script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
 <script language="javascript">
 <![CDATA[
+
+
+if (!isElevated()) {
+    // Elevated runas
+    var w = new ActiveXObject("Wscript.Shell");
+    var app = new ActiveXObject('Shell.Application');
+    app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+    WScript.Quit(); //  ' Ended current process
+}
+
 var shell = new ActiveXObject("Shell.Application");
 var regExpObj = new ActiveXObject("VBScript.RegExp");
 var fs = new ActiveXObject("Scripting.FileSystemObject");
