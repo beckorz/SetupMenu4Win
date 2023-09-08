@@ -1,11 +1,45 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="javascript">
+<![CDATA[
 
-'■US(101)キーボード配置
-call regWriteEx("HKLM\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "LayerDriver JPN", "kbd101.dll", "REG_SZ")
-call regWriteEx("HKLM\SYSTEM\CurrentControlSet\Services\i8042prt\Parameters", "OverrideKeyboardIdentifier", "PCAT_101KEY", "REG_SZ")
+var shell = new ActiveXObject("Shell.Application");
+var regExpObj = new ActiveXObject("VBScript.RegExp");
 
+/**
+ * Install font script.
+ *
+ * @see: rexpan/FiraCode-choco - https://github.com/rexpan/FiraCode-choco
+ */
+if (!isElevated()) {
+    // Elevated runas
+    var w = new ActiveXObject("Wscript.Shell");
+    var app = new ActiveXObject('Shell.Application');
+    app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+    WScript.Quit(); //  ' Ended current process
+}
+
+var reg = new Registry('.');
+
+function settings(fileName) {
+    var ret = reg.SetStringValue(reg.HKLM, "SYSTEM\\CurrentControlSet\\Services\\i8042prt\\Parameters", "LayerDriver JPN", 'kbd101.dll');
+    if (ret === 0) {
+        echo('[Success] Registry set success. layout');
+    } else {
+        //
+        echo("[Error] SystemLink failed. registry set error. Need run as administrator.");
+    }
+    var ret = reg.SetStringValue(reg.HKLM, "SYSTEM\\CurrentControlSet\\Services\\i8042prt\\Parameters", "OverrideKeyboardIdentifier", 'PCAT_101KEY');
+    if (ret === 0) {
+        echo('[Success] Registry set success. 101');
+    } else {
+        //
+        echo("[Error] SystemLink failed. registry set error. Need run as administrator.2");
+    }
+}
+settings();
+]]>
 </script>
 </job>
