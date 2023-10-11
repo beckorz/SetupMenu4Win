@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="javascript">
+<![CDATA[
+
+if (!isElevated()) {
+    // Elevated runas
+    var w = new ActiveXObject("Wscript.Shell");
+    var app = new ActiveXObject('Shell.Application');
+    app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+    WScript.Quit(); //  ' Ended current process
+}
+
+function echo(str) { WScript.echo(str); }
+
+var reg = new Registry('.');
+
+ret = reg.CreateKey(reg.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting");
+var ret = reg.SetDWORDValue(reg.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting", "Disabled", 1);
+if (ret === 0) {
+    echo('[Success] Registry set success.');
+} else {
+    //
+    echo("[Error] SystemLink failed. registry set error. Need run as administrator.");
+}
+
+]]>
+</script>
+</job>
