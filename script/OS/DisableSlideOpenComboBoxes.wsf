@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="vbscript" src="..\..\_lib\util.vbs"/>
+<script language="javascript" src="..\..\_lib\ECMAScript262_5th.js"/>
+<script language="javascript">
+<![CDATA[
+
+// パフォーマンス オプション - 視覚効果 - カスタム
+// コンボボックスをスライドして開く
+
+// if (!isElevated()) {
+//     // Elevated runas
+//     var w = new ActiveXObject("Wscript.Shell");
+//     var app = new ActiveXObject('Shell.Application');
+//     app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+//     WScript.Quit(); //  ' Ended current process
+// }
+
+var reg = new Registry('.');
+var bin = reg.GetBinaryValueVBArray(reg.HKCU, 'Control Panel\\Desktop', 'UserPreferencesMask');
+
+if ((bin[0] & 4) === 0) {
+    ShowMessageBox_Warn('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+    WScript.Quit();
+} 
+
+// 設定を外す
+var bin2 = reg.SetBitToZero(bin, 0, 2);
+
+// 16進数にして、Byte配列に変換して適用
+var hexStr = reg.BinToHexString(bin2);
+var binApply = hex2bytes(hexStr);
+var ret2 = reg.SetBinaryValue(reg.HKCU, 'Control Panel\\Desktop', 'UserPreferencesMask', binApply);
+if (ret2 === 0) {
+    ShowMessageBox_Info('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
+} else {
+    ShowMessageBox_Error('[Error] Apply failed. registry set error. Need run as administrator.', fs.GetFileName(WScript.ScriptFullName));
+}
+
+]]>
+</script>
+</job>
