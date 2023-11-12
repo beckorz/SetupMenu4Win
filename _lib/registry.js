@@ -2,6 +2,9 @@
  *
  *  Registry operation class
  *
+ *  Requirement:
+ *      Array polyfill(map())
+ *
  * *******************************************************/
 
 var Registry = function () {
@@ -180,6 +183,10 @@ Registry.prototype = {
         var outParam = this.doMethod("GetBinaryValue", hkey, key, name);
         return outParam.uValue;
     },
+    GetBinaryValueVBArray: function(hkey, key, name) {
+        var outParam = this.doMethod("GetBinaryValue", hkey, key, name);
+        return new VBArray(outParam.uValue).toArray();
+    },
     SetBinaryValue: function(hkey, key, name, value) {
         var outParam = this.doMethod("SetBinaryValue", hkey, key, value, name);
         return outParam.ReturnValue;
@@ -187,6 +194,36 @@ Registry.prototype = {
     ExistsBinaryValue: function(hkey, key, name) {
         var outParam = this.GetBinaryValue(hkey, key, name);
         return (outParam.uValue !== null);
+    },
+    /**
+     * Set specific bits to 0
+     * @param arr   TargetArray
+     * @param byteIndex Target byte index(zero start)
+     * @param bitIndex  Target bit index(zero start)
+     */
+    SetBitToZero: function(arr, byteIndex, bitIndex) {
+        arr[byteIndex] &= ~(1 << bitIndex);
+        return arr;
+    },
+    /**
+     * Set specific bits to 1
+     * @param arr   TargetArray
+     * @param byteIndex Target byte index(zero start)
+     * @param bitIndex  Target bit index(zero start)
+     */
+    SetBitToOne: function(arr, byteIndex, bitIndex) {
+        arr[byteIndex] |= (1 << bitIndex);
+        return arr;
+    },
+    /**
+     * Bin to array
+     * @param arr   TargetArray
+     */
+    BinToHexString: function(arr) {
+        return arr.map(function(byte) {
+            return ('0' + byte.toString(16)).slice(-2); })
+            .join('')
+            .toUpperCase();
     },
 
     // Create key
