@@ -5,11 +5,11 @@
 '_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_
 
 '事前にオブジェクト生成しておく(Singletonっぽく)
-set fs = CreateObject("Scripting.FileSystemObject")
-set fso = CreateObject("Scripting.FileSystemObject")
+'set fs = CreateObject("Scripting.FileSystemObject")
+'set fso = CreateObject("Scripting.FileSystemObject")
 set wshell = CreateObject("WScript.Shell")
-set wNetwork = CreateObject("WScript.Network")
-set vbRegExp = CreateObject("VBScript.RegExp")
+'set wNetwork = CreateObject("WScript.Network")
+'set vbRegExp = CreateObject("VBScript.RegExp")
 
 public Const HKEY_CLASSES_ROOT = &H80000000
 public Const HKEY_CURRENT_USER = &H80000001
@@ -224,8 +224,17 @@ end function
 '7 : vbNo [いいえ]
 '   @return 
 '//////////////////////////////////////////////////////////////////
+
+'Public const vbOK = 1
+'Public const vbCancel = 2
+'Public const vbAbort = 3
+'Public const vbRetry = 4
+'Public const vbIgnore = 5
+'Public const vbYes = 6
+'Public const vbNo = 7
+
 public function ShowMessageBox(prompt, buttons, title)
-    ShowMessageBox = msgbox(prompt,buttons,title)
+    ShowMessageBox = msgbox(prompt, buttons, title)
 end function
 ' Question雛形
 public function ShowMessageBox_Question(prompt, title)
@@ -235,10 +244,23 @@ end function
 public sub ShowMessageBox_Info(prompt, title)
     Call ShowMessageBox(prompt, vbInformation, title)
 end sub
-' Information雛形
+public sub ShowMessageBox_Information(prompt, title)
+    Call ShowMessageBox(prompt, vbInformation, title)
+end sub
+' Error雛形
 public sub ShowMessageBox_Err(prompt, title)
     Call ShowMessageBox(prompt, vbCritical, title)
 end sub
+public sub ShowMessageBox_Error(prompt, title)
+    Call ShowMessageBox(prompt, vbCritical, title)
+end sub
+' Warning'
+public function ShowMessageBox_Warn(prompt, title)
+    Call ShowMessageBox(prompt, vbExclamation, title)
+end function
+public function ShowMessageBox_Warning(prompt, title)
+    Call ShowMessageBox(prompt, vbExclamation, title)
+end function
 
 ' ***********************************************************
 ' ini読み出し ( 無ければ Empty を返す )
@@ -708,13 +730,4 @@ end function
 public function WaitFor(s)
     WScript.Sleep s * 1000
 end function
-
-'////////////////////////////////////////////////////////////////////////////////
-'   UAC昇格後、カレントディレクトリが変更されてしまうので、再設定(ホストオブジェクト毎に)
-'////////////////////////////////////////////////////////////////////////////////
-if isHta then
-    wshell.CurrentDirectory = fs.GetParentFolderName(location.pathname)
-else
-    wshell.CurrentDirectory = fs.GetParentFolderName(WScript.ScriptFullName)
-end if
 
