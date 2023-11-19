@@ -1,14 +1,60 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="../../_lib/registry.js"/>
+<script language="javascript" src="../../_lib/linq.js"/>
+<script language="javascript" src="../../_lib/util.js"/>
+<script language="vbscript" src="../../_lib/util.vbs"/>
+<script language="javascript">
+<![CDATA[
 
-'■VMware Workstation 設定
+/* Require administrative */
+if (!isElevated()) {
+    // Elevated runas
+    var w = new ActiveXObject("Wscript.Shell");
+    var app = new ActiveXObject('Shell.Application');
+    ShowMessageBox_Warning('Require administrative.', 'Warning');
+    app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+    WScript.Quit(); //  ' Ended current process
+}
 
-' トレイ表示 - なし
-call regWriteEx("HKCU\Software\VMware, Inc.\VMware Tray", "TrayBehavior", 2 , "REG_DWORD")
-call regDeleteEx("HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run", "vmware-tray")
-'call regDeleteEx("HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows\CurrentVersion\Run", "vmware-tray.exe")	' 新バージョン?
+var reg = new Registry('.');
+var ret = 0;
 
+// Change tasktray setting
+var key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced';
+ret = reg.GetDWORDValue(reg.HKCU, "Software\\VMware, Inc.\\VMware Tray", "TrayBehavior");
+if (ret === null) {
+    ShowMessageBox_Warning('Not found vmware-tray', 'Not found');
+    WScript.quit();
+} else {
+    ret = reg.SetDWORDValue(reg.HKCU, "Software\\VMware, Inc.\\VMware Tray", "TrayBehavior", 2);
+    if (ret === 0) {
+        // ok
+    } else {
+        ShowMessageBox_Error('Cannot settings', 'Error');
+        WScript.quit();
+    }
+}
+
+// Delete auto run value
+key = "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Run";
+var enums = reg.EnumValues(reg.HKLM, key);
+var names = Enumerable.From(enums.Names)
+          .Where(function(x) { return /^vmware-tray/gi.test(x); })
+          .Select().ToArray();
+
+if (names.length > 0) {
+    var value = names[0];
+    ret = reg.DeleteValue(reg.HKLM, key, value);
+    if (ret === 0) {
+        ShowMessageBox_Information('Settings ok.', 'Fin');
+    } else {
+        ShowMessageBox_Error('Registry delete key error. HKEY={0}, KEY={1}, Value {2}'.format(reg.HKLM.toString(16), key, value), 'Delete error');
+    }
+} else {
+    ShowMessageBox_Warning('Not found vmware-tray value.', 'Not found');
+}
+
+]]>
 </script>
 </job>
