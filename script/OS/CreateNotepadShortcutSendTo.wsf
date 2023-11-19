@@ -1,14 +1,21 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
 <script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
+<script language="javascript">
+<![CDATA[
 
-	' メモ帳を送るに作成
-	pathNotepad = wshell.ExpandEnvironmentStrings("%WinDir%\system32\notepad.exe")
-	
-	set sc = wshell.CreateShortcut(wshell.SpecialFolders("SendTo") & "\Notepad.lnk")
-	sc.TargetPath = pathNotepad
-	sc.save
+var notepadFilePath = wshell.ExpandEnvironmentStrings('%WinDir%\\system32\\notepad.exe')
 
+try {
+    var sc = wshell.CreateShortcut(wshell.SpecialFolders('SendTo') + '\\Notepad.lnk');
+    sc.TargetPath = notepadFilePath;
+    sc.Save();
+    ShowMessageBox_Info('[Success] Create notepad shortcut.', fs.GetFileName(WScript.ScriptFullName));
+} catch(e) {
+    ShowMessageBox_Error('[Error] ' + e.number + '\n' + e.description, fs.GetFileName(WScript.ScriptFullName));
+}
+
+]]>
 </script>
 </job>
