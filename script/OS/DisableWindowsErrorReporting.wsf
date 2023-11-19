@@ -2,6 +2,7 @@
 <job>
 <script language="javascript" src="..\..\_lib\registry.js"/>
 <script language="javascript" src="..\..\_lib\util.js"/>
+<script language="vbscript" src="..\..\_lib\util.vbs"/>
 <script language="javascript">
 <![CDATA[
 
@@ -13,17 +14,20 @@ if (!isElevated()) {
     WScript.Quit(); //  ' Ended current process
 }
 
-function echo(str) { WScript.echo(str); }
-
 var reg = new Registry('.');
+
+var currentSetting = reg.GetDWORDValue(reg.HKLM, 'SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting', 'Disabled');
+if (currentSetting === 1) {
+    ShowMessageBox_Warn('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+    WScript.Quit();
+}
 
 ret = reg.CreateKey(reg.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting");
 var ret = reg.SetDWORDValue(reg.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\Windows Error Reporting", "Disabled", 1);
 if (ret === 0) {
-    echo('[Success] Registry set success.');
+    ShowMessageBox_Info('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
 } else {
-    //
-    echo("[Error] SystemLink failed. registry set error. Need run as administrator.");
+    ShowMessageBox_Error('[Error] Apply failed. registry set error. Need run as administrator.', fs.GetFileName(WScript.ScriptFullName));
 }
 
 ]]>

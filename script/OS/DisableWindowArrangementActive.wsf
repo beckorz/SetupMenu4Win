@@ -1,12 +1,35 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>     <!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>    <!-- utilityモジュール -->
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="vbscript" src="..\..\_lib\util.vbs"/>
 <script language="javascript">
+<![CDATA[
 
-    // ウィンドウが画面の端に移動されたとき自動的に整列されないようにします。
-    root = HKCU;
-    keyName = "Control Panel\\Desktop"
-    regSetStringValue(root, keyName,  'WindowArrangementActive', "0");   // 
+if (!isElevated()) {
+    // Elevated runas
+    var w = new ActiveXObject('Wscript.Shell');
+    var app = new ActiveXObject('Shell.Application');
+    app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), '', 'runas');
+    WScript.Quit(); //  ' Ended current process
+}
 
+// ウィンドウが画面の端に移動されたとき自動的に整列されないようにします。
+var reg = new Registry('.');
+
+var currentSetting = reg.GetStringValue(reg.HKCU, 'Control Panel\\Desktop', 'WindowArrangementActive');
+if (currentSetting === '0') {
+    ShowMessageBox_Warn('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+    WScript.Quit();
+}
+
+var ret = reg.SetStringValue(reg.HKCU, 'Control Panel\\Desktop', 'WindowArrangementActive', '0');
+if (ret === 0) {
+    ShowMessageBox_Info('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
+} else {
+    ShowMessageBox_Error('[Error] Apply failed. registry set error. Need run as administrator.', fs.GetFileName(WScript.ScriptFullName));
+}
+
+]]>
 </script>
 </job>
