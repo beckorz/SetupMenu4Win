@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="javascript">
+<![CDATA[
+
+var reg = new Registry('.');
+
+function showKeyboardLayout() {
+    var path = 'SYSTEM\\CurrentControlSet\\Services\\i8042prt\\Parameters';
+    var key = 'OverrideKeyboardIdentifier';
+    var ret = reg.GetStringValue(reg.HKLM, path, key);
+    echo(ret);
+}
+showKeyboardLayout();
+]]>
+</script>
+
+</job>
