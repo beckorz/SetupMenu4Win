@@ -27,7 +27,7 @@
 '////////////////////////////////////////////////////////////////////////////////
 private function GetPathAdobeReader()
 	root = HKLM
-	keyName = "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\AcroRd32.exe"
+	keyName = "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\Acrobat.exe"
 	GetPathAdobeReader = regGetStringValue(root, keyName, "")
 end function
 

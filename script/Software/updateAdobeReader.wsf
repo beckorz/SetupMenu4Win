@@ -1,68 +1,71 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="../../_lib/registry.js"/>
+<script language="javascript" src="../../_lib/util.js"/>
+<script language="vbscript" src="../../_lib/util.vbs"/>
+<script language="javascript">
+<![CDATA[
 
-	instalPath = GetPathAdobeReader()
-	if instalPath = "" then
-		' インストールパスが取得できず(通常はインストールされてないと判断される)
-	else
-		ver = GetVersionAdobeReader(instalPath)
-		if ver = "" then
-			' 取得できず
-		else
-			' 取得できた
-			targetFile = GetPathAdobeManager()
-			if targetFile <> "" Then
-				cmd = " /PRODUCT:Reader /VERSION:"&ver&" /MODE:1"
-				call executeShell("""" + targetFile + """" + cmd)
-			end if
-		end if
-	end if
+// if (!isElevated()) {
+//     // Elevated runas
+//     var w = new ActiveXObject('Wscript.Shell');
+//     var app = new ActiveXObject('Shell.Application');
+//     app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), '', 'runas');
+//     WScript.Quit(); //  ' Ended current process
+// }
 
-'	set regtest = new Registry(".")
+function GetFileVersion(path) {
+    return fs.GetFileVersion(path);
+}
 
-'////////////////////////////////////////////////////////////////////////////////
-'	Aodbe Readerのインストールパスを取得
-'////////////////////////////////////////////////////////////////////////////////
-private function GetPathAdobeReader()
-	root = HKLM
-	keyName = "SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\AcroRd32.exe"
-	GetPathAdobeReader = regGetStringValue(root, keyName, "")
-end function
+function GetVersionAdobeReader(path) {
+    var verString = GetFileVersion(path);
+    if (verString.length === 0 ) {
+        return '';
+    } else {
+        var ver = verString.split('.');
+        // return ver[0] + '.' + ver[1];   // Major Minor
+        return ver[0] + '.0';   // Major Minor
+    }
+}
 
-'////////////////////////////////////////////////////////////////////////////////
-'	Aodbe Reader and Acrovat Manager のインストールパスを取得
-'////////////////////////////////////////////////////////////////////////////////
-private function GetPathAdobeManager()
+function GetPathAdobeManager() {
+    // "C:\Program Files (x86)\Common Files\Adobe\ARM\1.0\AdobeARM.exe"
+    var targetFile = wshell.ExpandEnvironmentStrings("%ProgramFiles(x86)%\\Common Files\\Adobe\\ARM\\1.0\\AdobeARM.exe")
+    var targetFile2 = wshell.ExpandEnvironmentStrings("%ProgramFiles%\\Common Files\\Adobe\\ARM\\1.0\\AdobeARM.exe")
 
-	targetFile = wshell.ExpandEnvironmentStrings("%ProgramFiles(x86)%\Common Files\Adobe\ARM\1.0\AdobeARM.exe")
-	targetFile2 = wshell.ExpandEnvironmentStrings("%ProgramFiles%\Common Files\Adobe\ARM\1.0\AdobeARM.exe")
-	
-	If (fs.FileExists(targetFile2)) Then
-		GetPathAdobeManager = targetFile2
-	Elseif (fs.FileExists(targetFile)) then
-		GetPathAdobeManager = targetFile
-	End If
+    if (fs.FileExists(targetFile2)) {
+        return targetFile2;
+    } else if (fs.FileExists(targetFile)) {
+        return targetFile;
+    }
+}
 
-end function
+function GetPathAdobeReader() {
+    var reg = new Registry('.');
+    var key = 'Software\\Adobe\\Adobe Acrobat\\DC\\Installer';
+    var name = 'Acrobat.exe'
+    return reg.GetStringValue(reg.HKLM, key, name);
+}
 
-'////////////////////////////////////////////////////////////////////////////////
-'	Aodbe Readerのインストールバージョンを取得(メジャーとマイナーバージョンのみ)
-'////////////////////////////////////////////////////////////////////////////////
-private function GetVersionAdobeReader(instalPath)
+    var installPath = GetPathAdobeReader()
+    if (!installPath) {
+        echo('Not install adobe reader');
+    } else {
+        var ver = GetVersionAdobeReader(installPath);
+        // echo(ver);
+        var pathARM = GetPathAdobeManager();
+        // echo(pathARM)
+        if (pathARM != '') {
+            // cmd = '/PRODUCT:Reader /VERSION:' + ver + ' /MODE:1'
+            cmd = '/PRODUCT:Acrobat /VERSION:' + ver + ' /MODE:1'
+            // " /PRODUCT:Reader /VERSION:"&ver&" /MODE:1"
+            // echo(cmd);
+            wshell.Run('%comspec% /c ' + '"' + pathARM + '" ' + cmd, 1, true)
+            // executeShell('' + pathARM + '' + cmd)
+        }
+    }
 
-	verString = GetFileVersion(instalPath)
-	if Len(verString) = 0 then
-		' ver情報取得できない
-		GetVersionAdobeReader = ""
-	else
-		' ver情報取得した
-		ver = Split(verString, ".")
-		GetVersionAdobeReader = ver(0) & "." & ver(1) ' メジャーとマイナーバージョンのみ
-	end if
-	
-end function
-
+]]>
 </script>
 </job>
