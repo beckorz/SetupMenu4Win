@@ -10,6 +10,7 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 -->
 <job>
+<script type="text/javascript" language="javascript" src="./_lib/boot.js"></script>
 <script language="javascript">
 // Detect UAC
 var oLocator = new ActiveXObject("WbemScripting.SWbemLocator");
