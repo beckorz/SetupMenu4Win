@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript" src="..\..\_lib\util.js"/>
+<script language="javascript" src="..\..\_lib\os.js"/>
+<script language="vbscript" src="..\..\_lib\util.vbs"/>
+<script language="javascript">
+<![CDATA[
+
+// if (!isElevated()) {
+//     // Elevated runas
+//     var w = new ActiveXObject("Wscript.Shell");
+//     var app = new ActiveXObject('Shell.Application');
+//     app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+//     WScript.Quit(); //  ' Ended current process
+// }
+
+var reg = new Registry('.');
+var hkey = reg.HKCU;
+var key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer';
+var name = 'AltTabSettings';
+
+var currentSetting = reg.GetDWORDValue(hkey, key, name);
+
+switch(currentSetting)
+{
+    case 1:
+    {
+        ShowMessageBoxWarning('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+        WScript.Quit();
+        break;
+    }
+    default:
+    {
+        // Case not settings
+        var ret = reg.SetDWORDValue(hkey, key, name, 1);
+        if (ret === 0) {
+            ShowMessageBoxInfo('[Success] The registry setting was successful.', fs.GetFileName(WScript.ScriptFullName));
+        } else {
+            ShowMessageBoxError('[Error] Apply failed. registry set error. Need run as administrator.', fs.GetFileName(WScript.ScriptFullName));
+        }
+        break;
+    }
+}
+
+]]>
+</script>
+</job>
