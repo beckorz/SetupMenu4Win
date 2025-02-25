@@ -1,10 +1,30 @@
 ﻿<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
 <script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
 <script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+<script language="javascript">
+// if (!isElevated()) {
+//     // Elevated runas
+//     var w = new ActiveXObject("Wscript.Shell");
+//     var app = new ActiveXObject('Shell.Application');
+//     app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), "", "runas");
+//     WScript.Quit(); //  ' Ended current process
+// }
 
-' デスクトップに Windows にバージョン/ビルド を表示
-call regWriteEx("HKCU\Control Panel\Desktop", "PaintDesktopVersion", 1, "REG_DWORD")	'
+var reg = new Registry('.');
+
+var currentSetting = reg.GetDWORDValue(reg.HKCU, 'Control Panel\\Desktop', 'PaintDesktopVersion');
+if (currentSetting === 1) {
+    ShowMessageBoxWarning('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+    WScript.Quit();
+}
+
+var ret = reg.SetDWORDValue(reg.HKCU, "Control Panel\\Desktop", "PaintDesktopVersion", 1);
+if (ret === 0) {
+    ShowMessageBoxInfo('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
+} else {
+    ShowMessageBoxError('[Error] Apply failed. registry set error.', fs.GetFileName(WScript.ScriptFullName));
+}
 
 </script>
 </job>

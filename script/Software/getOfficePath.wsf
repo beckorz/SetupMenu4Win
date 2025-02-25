@@ -1,66 +1,77 @@
 ﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>     <!-- utilityモジュール -->
+<script language="javascript" src="..\..\_lib\registry.js"/>
 <script language="javascript" src="..\..\_lib\util.js"/>    <!-- utilityモジュール -->
-<script language="vbscript">
+<script language="vbscript" src="..\..\_lib\util.vbs"/>     <!-- utilityモジュール -->
+<script language="javascript">
 
-'progId = "Access.Application"
-progId = "Excel.Application"
-'progId = "Outlook.Application"
-'progId = "Powerpoint.Application"
-'progId = "Word.Application"
-'progId = "FrontPage.Application"
+// '//////////////////////////////////////////////////////////////////
+// '   短いファイル名から、長いファイル名に変換したファイル名を取得
+// '   @return ファイルパス
+// '//////////////////////////////////////////////////////////////////
+function getLongFileName(shortFileName) {
+  var app = new ActiveXObject("Shell.Application");
+  var folder = fs.GetParentFolderName(shortFileName);
+  var fileName = fs.GetFileName(shortFileName);
+  var filePath = app.Namespace(folder).Items().Item(fileName).Path;
+  return filePath;
+}
+// var progId = "Access.Application";
+var progId = "Excel.Application";
+// var progId = "Outlook.Application";
+// var progId = "Powerpoint.Application";
+// var progId = "Word.Application";
+// var progId = "FrontPage.Application";
+function isInstalledExcel() {
+  var reg = new Registry('.');
+  var key = 'Software\\Classes\\' + progId + '\\CLSID';
+  var name = '';
 
-if IsInstalledExcel() then
-    WScript.echo(GetLongFileName(GetInstallPathExcel()))
-end if
+  var currentSetting = reg.GetStringValue(reg.HKLM, key, name);
 
-public function IsInstalledExcel()
+  if (reg.ExistsKey(reg.HKLM, key)) {
+    var clsId = reg.GetStringValue(reg.HKLM, key, name);
+    var key = 'Software\\Classes\\CLSID\\' + clsId + '\\LocalServer32';
+    if (reg.GetStringValue(reg.HKLM, key, name) !== '') {
+      return true;
+    } else {
+      key = 'Software\\Wow6432Node\\Classes\\CLSID\\' + clsId + '\\LocalServer32';
+      if (reg.GetStringValue(reg.HKLM, key, name) !== '') {
+        return true;
+      }
+    }
+  } else {
+    return false;
+  }
+}
 
-    root = HKLM
-    keyName = "Software\Classes\" & progId & "\CLSID"
+function GetInstallPathExcel() {
+  var reg = new Registry('.');
+  var key = 'Software\\Classes\\' + progId + '\\CLSID';
+  var name = '';
 
-    if regExistsStringValue(root, keyName, "") then
-        clsId = regGetStringValue(root, keyName, "")
-        keyName = "Software\Classes\CLSID\" & clsId & "\LocalServer32"
-        if regExistsStringValue(root, keyName, "") then
-            ' 
-            IsInstalledExcel = true
-        else
-            keyName = "Software\Wow6432Node\Classes\CLSID\" & clsId & "\LocalServer32"
-            if regExistsStringValue(root, keyName, "") then
-                IsInstalledExcel = true
-            end if
-        end if
-    else
-        ' 完全に未インストール
-        IsInstalledExcel = false
-    end if
+  if (reg.ExistsKey(reg.HKLM, key)) {
+    var clsId = reg.GetStringValue(reg.HKLM, key, name);
+    var key = 'Software\\Classes\\CLSID\\' + clsId + '\\LocalServer32';
+    if (reg.GetStringValue(reg.HKLM, key, name) !== null) {
+      var getValue = reg.GetStringValue(reg.HKLM, key, name);
+      var a = getValue.replace(/ \/automation/g, '');
+      return fs.GetParentFolderName(a);
+    } else {
+      key = 'Software\\Wow6432Node\\Classes\\CLSID\\' + clsId + '\\LocalServer32';
+      if (reg.GetStringValue(reg.HKLM, key, name) !== null) {
+        var getValue = reg.GetStringValue(reg.HKLM, key, name);
+        var a = getValue.replace(/ \/automation/g, '');
+        return fs.GetParentFolderName(a);
+      }
+    }
+  } else {
+    // 完全に未インストール
+  }
+}
 
-end function
+if (isInstalledExcel()) {
+  echo(GetInstallPathExcel());
+}
 
-public function GetInstallPathExcel()
-
-    root = HKLM
-    keyName = "Software\Classes\" & progId & "\CLSID"
-
-    if regExistsStringValue(root, keyName, "") then
-        clsId = regGetStringValue(root, keyName, "")
-        keyName = "Software\Classes\CLSID\" & clsId & "\LocalServer32"
-        if regExistsStringValue(root, keyName, "") then
-            ' 
-            GetInstallPathExcel = GetLongFileName(fs.GetParentFolderName(replace(regGetStringValue(root, keyName, ""), " /automation", "")))
-            GetInstallPathExcel = replace(GetInstallPathExcel, "root\", "")
-        else
-            keyName = "Software\Wow6432Node\Classes\CLSID\" & clsId & "\LocalServer32"
-            if regExistsStringValue(root, keyName, "") then
-                GetInstallPathExcel = GetLongFileName(fs.GetParentFolderName(replace(regGetStringValue(root, keyName, ""), " /automation", "")))
-                GetInstallPathExcel = replace(GetInstallPathExcel, "root\", "")
-            end if
-        end if
-    else
-        ' 完全に未インストール
-    end if
-
-end function
 </script>
 </job>

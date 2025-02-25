@@ -6,6 +6,10 @@
 <script language="javascript">
 <![CDATA[
 
+/**
+ * Windows 11では、ペイントが無い
+ */
+
 // if (!isElevated()) {
 //     // Elevated runas
 //     var w = new ActiveXObject('Wscript.Shell');
@@ -15,21 +19,27 @@
 // }
 
 var reg = new Registry('.');
+var key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Paint\\View';
+var ret = null;
 
-var currentSetting = reg.GetDWORDValue(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Paint\\View', 'BMPWidth');
+var currentSetting = reg.GetDWORDValue(reg.HKCU, key, 'BMPWidth');
 if (currentSetting === 1) {
-    ShowMessageBox_Warn('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
-    WScript.Quit();
+  ShowMessageBoxWarning('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+  WScript.Quit();
+}
+
+if (!reg.ExistsKey(reg.HKCU, key)) {
+  ShowMessageBoxError('[Error] MSPaintの設定キーが存在しません。ペイントツールが変わっている可能性があります。', fs.GetFileName(WScript.ScriptFullName));
+  WScript.Quit();
 }
 
 // ペイント キャンパスの大きさを1pxへ。
-var ret = null;
-ret = reg.SetDWORDValue(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Paint\\View', 'BMPWidth', 1);
-ret = reg.SetDWORDValue(reg.HKCU, 'Software\\Microsoft\\Windows\\CurrentVersion\\Applets\\Paint\\View', 'BMPHeight', 1);
+ret = reg.SetDWORDValue(reg.HKCU, key, 'BMPWidth', 1);
+ret = reg.SetDWORDValue(reg.HKCU, key, 'BMPHeight', 1);
 if (ret === 0) {
-    ShowMessageBox_Info('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
+  ShowMessageBoxInfo('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
 } else {
-    ShowMessageBox_Error('[Error] Apply failed. registry set error. Need run as administrator.', fs.GetFileName(WScript.ScriptFullName));
+  ShowMessageBoxError('[Error] Apply failed. registry set error.', fs.GetFileName(WScript.ScriptFullName));
 }
 
 

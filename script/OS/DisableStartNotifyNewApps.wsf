@@ -1,10 +1,35 @@
 ﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
+<script language="javascript" src="..\..\_lib\registry.js"/>
 <script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
+<script language="javascript">
 
-'■新しくインストールされたプログラムを強調表示する(XP,7)
-call regWriteEx("HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer¥Advanced", "Start_NotifyNewApps", 0, "REG_DWORD")
+// '■新しくインストールされたプログラムを強調表示する(XP,7)
+
+// if (!isElevated()) {
+//     // Elevated runas
+//     var w = new ActiveXObject('Wscript.Shell');
+//     var app = new ActiveXObject('Shell.Application');
+//     app.ShellExecute(WScript.FullName, '"{0}" "{1}"'.format(WScript.ScriptFullName, args[0]), '', 'runas');
+//     WScript.Quit(); //  ' Ended current process
+// }
+
+var reg = new Registry('.');
+var key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced';
+var name = 'Start_NotifyNewApps';
+
+var currentSetting = reg.GetDWORDValue(reg.HKCU, key, name);
+if (currentSetting === 0) {
+  ShowMessageBoxWarning('既に設定が外されているので、設定不要です。', fs.GetFileName(WScript.ScriptFullName));
+  WScript.Quit();
+}
+
+ret = reg.SetDWORDValue(reg.HKCU, key, name, 0);
+if (ret === 0) {
+  ShowMessageBoxInfo('[Success] The registry setting was successful. Please logout to apply the change.', fs.GetFileName(WScript.ScriptFullName));
+} else {
+  ShowMessageBoxError('[Error] Apply failed. registry set error.', fs.GetFileName(WScript.ScriptFullName));
+}
 
 </script>
 </job>

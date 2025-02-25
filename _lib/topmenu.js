@@ -1,4 +1,31 @@
-﻿/* メニュー生成 */
+﻿function compareVersions(v1, operator, v2) {
+    function parseVersion(ver) {
+        var parts = String(ver).split('.');
+        var numbers = [
+            parseInt(parts[0], 10) || 0,
+            parseInt(parts[1], 10) || 0,
+            parseInt(parts[2], 10) || 0,
+            parseInt(parts[3], 10) || 0
+        ];
+        return numbers;
+    }
+    
+    var ver1 = parseVersion(v1);
+    var ver2 = parseVersion(v2);
+    
+    for (var i = 0; i < 4; i++) {
+        if (ver1[i] < ver2[i]) return operator === '<' || operator === '<=' || operator === '!=';
+        if (ver1[i] > ver2[i]) return operator === '>' || operator === '>=' || operator === '!=';
+    }
+    return operator === '==' || operator === '<=' || operator === '>=';
+}
+
+function splitVersionString(versionString) {
+    var match = versionString.match(/(>=|<=|>|<|==|!=)?\s*(\d+(?:\.\d+)*)/);
+    return match ? { operator: match[1] || '', version: match[2] } : null;
+}
+
+/* メニュー生成 */
 function LoadTopMenu() {
 	var x_path = "/Toolmenu/menu[@id='top']";
 	var NON_IMAGE_URL = "./images/items/non.jpg";
@@ -12,7 +39,7 @@ function LoadTopMenu() {
 
 	osVer = GetOSVersion();
 	if (IsDebug) { 
-		showMessageBox_info(osVer, "ver"); 
+      showMessageBoxInfo(osVer, "ver");
 	}
 
 	// topメニュー用ノード取得
@@ -77,7 +104,9 @@ function LoadTopMenu() {
 					requireOsver = nodes_item.item(j).selectSingleNode("requirements/osver").text;
 				}
 				// 条件判定
-				visibleItem = (eval(osVer + requireOsver));
+                var require = splitVersionString(requireOsver);
+                var res = compareVersions(osVer, String(require.operator), String(require.version))
+				visibleItem = res;
 			}
 
 			if (IsDebug == true) {

@@ -1,12 +1,28 @@
-﻿<job>
-<script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
-<script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<job>
+<script language="javascript" src="..\..\_lib\registry.js"/>
+<script language="javascript">
+<![CDATA[
 
-'■フォルダオプション
-call regWriteEx("HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "Hidden", 1 , "REG_DWORD")
-call regWriteEx("HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "HideFileExt", 0, "REG_DWORD")
-call regWriteEx("HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ShowSuperHidden", 1, "REG_DWORD")
+var reg = new Registry('.');
+var key = 'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced';
+var ret = 0;
 
+ret += reg.SetDWORDValue(reg.HKCU, key, "Hidden", 1);
+ret += reg.SetDWORDValue(reg.HKCU, key, "HideFileExt", 0);
+ret += reg.SetDWORDValue(reg.HKCU, key, "ShowSuperHidden", 1);
+
+if (ret === 0) {
+    // TODO: Too bad.
+    var app = new ActiveXObject('Shell.Application');
+    app.ShellExecute("taskkill", "/im explorer.exe /f");
+    WScript.sleep(1000);
+    app.ShellExecute("explorer");
+    WScript.echo('[Success] Registry set successfully.');
+} else {
+    WScript.echo("[Error] failed. registry set error.");
+}
+
+]]>
 </script>
 </job>

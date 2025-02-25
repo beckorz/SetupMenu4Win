@@ -1,9 +1,8 @@
 ﻿<job>
 <script language="vbscript" src="..\..\_lib\util.vbs"/>	<!-- utilityモジュール -->
 <script language="javascript" src="..\..\_lib\util.js"/>	<!-- utilityモジュール -->
-<script language="vbscript">
-
-call wshell.run("explorer " & wshell.SpecialFolders("AllUsersDesktop"))
-
+<script language="javascript">
+var wshell = new ActiveXObject("WScript.Shell");
+wshell.run("explorer " + wshell.SpecialFolders("AllUsersDesktop"))
 </script>
 </job>

@@ -5,15 +5,16 @@
 <script language="javascript">
 <![CDATA[
 
+var wshell = new ActiveXObject("WScript.Shell");
 var notepadFilePath = wshell.ExpandEnvironmentStrings('%WinDir%\\system32\\notepad.exe')
 
 try {
-    var sc = wshell.CreateShortcut(wshell.SpecialFolders('SendTo') + '\\Notepad.lnk');
-    sc.TargetPath = notepadFilePath;
-    sc.Save();
-    ShowMessageBox_Info('[Success] Create notepad shortcut.', fs.GetFileName(WScript.ScriptFullName));
+  var sc = wshell.CreateShortcut(wshell.SpecialFolders('SendTo') + '\\Notepad.lnk');
+  sc.TargetPath = notepadFilePath;
+  sc.Save();
+  ShowMessageBoxInfo('[Success] Create notepad shortcut.', fs.GetFileName(WScript.ScriptFullName));
 } catch(e) {
-    ShowMessageBox_Error('[Error] ' + e.number + '\n' + e.description, fs.GetFileName(WScript.ScriptFullName));
+  ShowMessageBoxError('[Error] ' + e.number + '\n' + e.description, fs.GetFileName(WScript.ScriptFullName));
 }
 
 ]]>

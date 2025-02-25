@@ -6,7 +6,7 @@
 /**
  * Flash Player(ActiveX版) (IE) の自動アップデート処理を手動で行う
  */
-
+wshell = new ActiveXObject("WScript.Shell");
 var installDir  = wshell.ExpandEnvironmentStrings('%windir%\\system32\\Macromed\\flash\\');	// 検索対象ディレクトリ \で終了
 var installDir2 = wshell.ExpandEnvironmentStrings('%windir%\\syswow64\\Macromed\\flash\\');	// 検索対象ディレクトリ \で終了
 var objDir = null;

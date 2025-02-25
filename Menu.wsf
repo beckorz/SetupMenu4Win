@@ -1,4 +1,5 @@
-﻿<!--
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
 _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 
    htaの起動前スクリプト
@@ -12,6 +13,7 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 <job>
 <script type="text/javascript" language="javascript" src="./_lib/boot.js"></script>
 <script language="javascript">
+<![CDATA[
 // Detect UAC
 var oLocator = new ActiveXObject("WbemScripting.SWbemLocator");
 var oService = oLocator.ConnectServer(".", "root\\default");
@@ -34,5 +36,6 @@ if (hasUac) {
 } else {
     app.ShellExecute(w.ExpandEnvironmentStrings("%windir%\\system32\\mshta.exe"), "\"" + cur + "\\" + WScript.ScriptName.replace("wsf", "hta") + "\" \"" + cur + "\"")
 }
+]]>
 </script>
 </job> 
